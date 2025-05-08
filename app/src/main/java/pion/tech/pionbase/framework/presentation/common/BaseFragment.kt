@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -148,6 +149,12 @@ abstract class BaseFragment<Binding : ViewBinding, VM : ViewModel>(
             } else {
                 (activity as MainActivity).hiddenLoading()
             }
+        }
+    }
+
+    fun onSystemBack(action: () -> Unit) {
+        activity?.onBackPressedDispatcher?.addCallback(this, true) {
+            action.invoke()
         }
     }
 
