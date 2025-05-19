@@ -15,7 +15,7 @@ fun HomeFragment.backEvent() {
 }
 
 fun HomeFragment.intiView() {
-    val bitmap = BitmapFactory.decodeResource(resources, R.drawable.porsche)
+    val bitmap = BitmapFactory.decodeResource(resources, R.drawable.anime9)
     binding.perspectiveView.setBitmap(bitmap)
 }
 

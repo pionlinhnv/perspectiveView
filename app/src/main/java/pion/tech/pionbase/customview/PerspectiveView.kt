@@ -60,9 +60,9 @@ class PerspectiveView @JvmOverloads constructor(
     fun setBitmap(bmp: Bitmap) {
         bitmap = bmp
         cornerPoints[0] = PointF(0f, 0f)
-        cornerPoints[1] = PointF(bmp.width.toFloat(), 0f)
-        cornerPoints[2] = PointF(bmp.width.toFloat(), bmp.height.toFloat())
-        cornerPoints[3] = PointF(0f, bmp.height.toFloat())
+        cornerPoints[1] = PointF(200f, 0f)
+        cornerPoints[2] = PointF(200f, 200f)
+        cornerPoints[3] = PointF(0f, 200f)
         invalidate()
     }
 

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_main.xml"
-    app:startDestination="@id/splashFragment">
+    app:startDestination="@id/selectToolFragment">
 
     <fragment
         android:id="@+id/splashFragment"
@@ -19,4 +19,8 @@
         android:name="pion.tech.pionbase.framework.presentation.home.HomeFragment"
         android:label="HomeFragment"
         tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/selectToolFragment"
+        android:name="pion.tech.pionbase.framework.presentation.selecttool.SelectToolFragment"
+        android:label="SelectToolFragment" />
 </navigation>
