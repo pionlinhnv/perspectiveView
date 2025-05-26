@@ -8,6 +8,7 @@ import pion.tech.pionbase.R
 import pion.tech.pionbase.customview.SelectToolView
 import pion.tech.pionbase.databinding.FragmentSelectToolBinding
 import pion.tech.pionbase.framework.presentation.common.BaseFragment
+import pion.tech.pionbase.util.displayToast
 
 @AndroidEntryPoint
 class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolViewModel>(
@@ -57,5 +58,9 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
 
         // Gán lại layoutParams
         binding.ivPreview.layoutParams = layoutParams
+    }
+
+    override fun onSelectTooSmall() {
+        displayToast("Too Small")
     }
 }

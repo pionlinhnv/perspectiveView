@@ -12,6 +12,7 @@ import android.graphics.PointF
 import android.graphics.PorterDuff
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import pion.tech.pionbase.util.DeviceDimensionsHelper.convertDpToPixel
@@ -132,16 +133,23 @@ class SelectToolView @JvmOverloads constructor(
             MotionEvent.ACTION_UP -> {
                 isTouch = false
                 selectPath.close()
+                checkSizePath()
                 postInvalidate()
             }
         }
         return true
     }
 
-    private var listener: Listener? = null
+    private fun checkSizePath() {
+        val bounds = RectF()
+        selectPath.computeBounds(bounds, true)
 
-    fun setListener(listener: Listener) {
-        this.listener = listener
+        val boundWidth = bounds.width()
+        val boundHeight = bounds.height()
+
+        if (boundWidth < 100 || boundHeight < 100) {
+            listener?.onSelectTooSmall()
+        }
     }
 
     private fun checkFirstQuadrant() {
@@ -180,8 +188,15 @@ class SelectToolView @JvmOverloads constructor(
         )
     }
 
+    private var listener: Listener? = null
+
+    fun setListener(listener: Listener) {
+        this.listener = listener
+    }
+
     interface Listener {
         fun onDrawSelect(bitmap: Bitmap)
         fun onPreviewChange(isFirstQuadrant: Boolean)
+        fun onSelectTooSmall()
     }
 }
