@@ -5,13 +5,25 @@ import android.graphics.Bitmap.createBitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
+import androidx.activity.addCallback
 import androidx.core.graphics.scale
+import androidx.navigation.fragment.findNavController
 import pion.tech.pionbase.util.setPreventDoubleClickScaleView
 
 fun SelectToolFragment.addTattooEvent() {
     binding.btnAddTattoo.setPreventDoubleClickScaleView {
 
     }
+}
+
+fun SelectToolFragment.backEvent() {
+    activity?.onBackPressedDispatcher?.addCallback(this, true) {
+        onBackPressed()
+    }
+}
+
+fun SelectToolFragment.onBackPressed() {
+    findNavController().navigateUp()
 }
 
 fun SelectToolFragment.bitmapBackground(

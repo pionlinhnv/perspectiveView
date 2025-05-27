@@ -26,6 +26,6 @@ fun SplashFragment.startAnimation() {
         val bundle = Bundle()
         bundle.putParcelable(BundleKey.KEY_DUMMY_ENTITY, dummyEntity)
 
-        safeNav(R.id.splashFragment, R.id.homeFragment, bundle)
+        safeNav(R.id.splashFragment, R.id.action_splashFragment_to_selectToolFragment, bundle)
     }
 }

@@ -35,17 +35,15 @@ class SelectToolView @JvmOverloads constructor(
     private val selectPaint = Paint()
     private val selectPath = Path()
 
-    //tam cua path
-    private val centerPaint = Paint().apply {
-        color = Color.parseColor("#CC3A2B")
-        style = Paint.Style.FILL
-    }
-
     //bound cua path
     private val boundPaint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
     }
+
+    private val pathPoints = mutableListOf<PointF>()
+
+    private var isSelectPathDone = false
 
     @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -73,7 +71,6 @@ class SelectToolView @JvmOverloads constructor(
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         drawBg(mCanvas)
         drawSelectPath(mCanvas)
-        drawCenter(mCanvas)
         drawBound(mCanvas)
 
         mBitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
@@ -94,17 +91,6 @@ class SelectToolView @JvmOverloads constructor(
         canvas.drawPath(selectPath, selectPaint)
     }
 
-    private fun drawCenter(canvas: Canvas) {
-        val bounds = RectF()
-        selectPath.computeBounds(bounds, true)
-
-        // Tọa độ tâm
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
-
-        canvas.drawCircle(centerX, centerY, 10f, centerPaint)
-    }
-
     private fun drawBound(canvas: Canvas) {
         val bounds = RectF()
         selectPath.computeBounds(bounds, true)
@@ -113,9 +99,16 @@ class SelectToolView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (isSelectPathDone) return true
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isTouch = true
+
+                pathPoints.clear()
+                val point = PointF(event.x, event.y)
+                pathPoints.add(point)
+
                 selectPath.reset()
                 selectPath.moveTo(event.x, event.y)
                 currentPoint.set(event.x, event.y)
@@ -124,8 +117,39 @@ class SelectToolView @JvmOverloads constructor(
 
             MotionEvent.ACTION_MOVE -> {
                 isTouch = true
-                selectPath.lineTo(event.x, event.y)
-                currentPoint.set(event.x, event.y)
+
+                // Check if current point intersects with any previous point
+                val currentX = event.x
+                val currentY = event.y
+                val intersectionResult = findIntersectionPoint(currentX, currentY)
+
+                if (intersectionResult != null && pathPoints.size > 2) {
+                    // Found intersection, create a new closed path from the intersection
+                    val (intersectionPoint, intersectionIndex) = intersectionResult
+
+                    // Create a new path with only the points that form the closed shape
+                    selectPath.reset()
+                    selectPath.moveTo(intersectionPoint.x, intersectionPoint.y)
+
+                    // Add points from the intersection index to the end of the current path
+                    for (i in intersectionIndex until pathPoints.size) {
+                        selectPath.lineTo(pathPoints[i].x, pathPoints[i].y)
+                    }
+
+                    // Close the path
+                    selectPath.close()
+                    isTouch = false
+                    isSelectPathDone = true
+                    checkSizePath()
+                    postInvalidate()
+                    return true
+                }
+
+                // No intersection, continue drawing
+                val point = PointF(currentX, currentY)
+                pathPoints.add(point)
+                selectPath.lineTo(currentX, currentY)
+                currentPoint.set(currentX, currentY)
                 checkFirstQuadrant()
                 postInvalidate()
             }
@@ -140,6 +164,25 @@ class SelectToolView @JvmOverloads constructor(
         return true
     }
 
+    private fun findIntersectionPoint(x: Float, y: Float, threshold: Float = 20f): Pair<PointF, Int>? {
+        // Bỏ qua kiểm tra nếu chưa đủ điểm
+        if (pathPoints.size <= 10) return null
+
+        // Chỉ kiểm tra các điểm đầu tiên, bỏ qua các điểm gần đây
+        // Tăng số lượng điểm bỏ qua ở cuối lên 10 thay vì 3
+        for (i in 0 until pathPoints.size - 10) {
+            val point = pathPoints[i]
+            val distance = Math.sqrt(Math.pow((x - point.x).toDouble(), 2.0) +
+                    Math.pow((y - point.y).toDouble(), 2.0))
+
+            // Giảm ngưỡng xuống để yêu cầu điểm gần hơn
+            if (distance < 15f) {
+                return Pair(point, i)
+            }
+        }
+        return null
+    }
+
     private fun checkSizePath() {
         val bounds = RectF()
         selectPath.computeBounds(bounds, true)
@@ -152,6 +195,7 @@ class SelectToolView @JvmOverloads constructor(
         }
     }
 
+    //check diem cham o goc phan tu thu nhat
     private fun checkFirstQuadrant() {
         if (currentPoint.x in 0f..width / 2f && currentPoint.y in 0f..height / 2f) {
             if (!isPreviewInFirstQuadrant) {

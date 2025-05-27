@@ -16,6 +16,7 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
     SelectToolViewModel::class.java
 ), SelectToolView.Listener {
     override fun init(view: View) {
+        backEvent()
         addTattooEvent()
         binding.selectToolView.setListener(this)
         binding.ivMain.post {
@@ -61,6 +62,6 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
     }
 
     override fun onSelectTooSmall() {
-        displayToast("Too Small")
+//        displayToast("Too Small")
     }
 }
