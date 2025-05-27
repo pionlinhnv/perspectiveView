@@ -166,11 +166,11 @@ class SelectToolView @JvmOverloads constructor(
 
     private fun findIntersectionPoint(x: Float, y: Float, threshold: Float = 20f): Pair<PointF, Int>? {
         // Bỏ qua kiểm tra nếu chưa đủ điểm
-        if (pathPoints.size <= 10) return null
+        if (pathPoints.size <= 50) return null
 
         // Chỉ kiểm tra các điểm đầu tiên, bỏ qua các điểm gần đây
         // Tăng số lượng điểm bỏ qua ở cuối lên 10 thay vì 3
-        for (i in 0 until pathPoints.size - 10) {
+        for (i in 0 until pathPoints.size - 50) {
             val point = pathPoints[i]
             val distance = Math.sqrt(Math.pow((x - point.x).toDouble(), 2.0) +
                     Math.pow((y - point.y).toDouble(), 2.0))
