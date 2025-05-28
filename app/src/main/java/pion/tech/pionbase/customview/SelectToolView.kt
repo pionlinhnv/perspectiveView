@@ -21,6 +21,7 @@ import android.view.View
 import androidx.core.graphics.scale
 import pion.tech.pionbase.util.DeviceDimensionsHelper.convertDpToPixel
 import kotlin.math.max
+import androidx.core.graphics.createBitmap
 
 class SelectToolView @JvmOverloads constructor(
     context: Context,
@@ -54,6 +55,14 @@ class SelectToolView @JvmOverloads constructor(
         style = Paint.Style.STROKE
     }
 
+    //fill cua select path
+    private val fillPaint = Paint().apply {
+        color = Color.parseColor("#4DFFFFFF")
+        style = Paint.Style.FILL
+    }
+
+    private var canDrawFillPath = false
+
     private val pathPoints = mutableListOf<PointF>()
     private var isDrawPathDone = false
 
@@ -79,6 +88,9 @@ class SelectToolView @JvmOverloads constructor(
     }
 
     fun setBitmapSticker(bitmapSticker: Bitmap) {
+        //k ve fill path nua
+        canDrawFillPath = true
+
         this.bitmapSticker = bitmapSticker
         postInvalidate()
     }
@@ -115,6 +127,7 @@ class SelectToolView @JvmOverloads constructor(
         drawBg(mCanvas)
         drawSticker(mCanvas)
         drawSelectPath(mCanvas)
+        drawSelectPathFill(mCanvas)
         drawBound(mCanvas)
 
         mBitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
@@ -147,6 +160,12 @@ class SelectToolView @JvmOverloads constructor(
 
     private fun drawSelectPath(canvas: Canvas) {
         canvas.drawPath(selectPath, selectPaint)
+    }
+
+    private fun drawSelectPathFill(canvas: Canvas) {
+        if(!canDrawFillPath) {
+            canvas.drawPath(selectPath, fillPaint)
+        }
     }
 
     private fun drawBound(canvas: Canvas) {
