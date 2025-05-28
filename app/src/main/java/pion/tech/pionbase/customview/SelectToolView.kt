@@ -13,6 +13,7 @@ import android.graphics.Path
 import android.graphics.PathMeasure
 import android.graphics.PointF
 import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
@@ -42,6 +43,16 @@ class SelectToolView @JvmOverloads constructor(
     private var matrixSticker = Matrix()
     private var stickerPositionX = 0f
     private var stickerPositionY = 0f
+
+    private var paintCutSticker = Paint().apply {
+        isAntiAlias = true
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+    }
+
+    private var subPaintPath = Paint().apply {
+        isAntiAlias = true
+        maskFilter = BlurMaskFilter(30f, BlurMaskFilter.Blur.NORMAL)
+    }
 
     //bitmapBg
     private var bitmapBg: Bitmap? = null
@@ -143,6 +154,11 @@ class SelectToolView @JvmOverloads constructor(
     private fun drawSticker(canvas: Canvas) {
         bitmapSticker ?: return
 
+        val bitmapCut = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val subCanvas = Canvas(bitmapCut)
+
+        subCanvas.drawPath(selectPath, subPaintPath)
+
         val bounds = RectF()
         selectPath.computeBounds(bounds, true)
 
@@ -151,7 +167,9 @@ class SelectToolView @JvmOverloads constructor(
         matrixSticker.setTranslate(bounds.left + stickerPositionX, bounds.top + stickerPositionY)
         matrixSticker.postScale(scale, scale, bounds.left, bounds.top)
 
-        canvas.drawBitmap(bitmapSticker!!, matrixSticker, null)
+        subCanvas.drawBitmap(bitmapSticker!!, matrixSticker, paintCutSticker)
+
+        canvas.drawBitmap(bitmapCut, 0f, 0f, null)
     }
 
     private fun drawBg(canvas: Canvas) {
