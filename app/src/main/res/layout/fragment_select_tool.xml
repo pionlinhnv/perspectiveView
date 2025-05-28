@@ -11,7 +11,7 @@
         android:layout_margin="@dimen/_16dp"
         android:scaleType="centerCrop"
         android:src="@drawable/girl"
-        app:layout_constraintBottom_toTopOf="@+id/llBlur"
+        app:layout_constraintBottom_toTopOf="@+id/llPositionX"
         app:layout_constraintTop_toTopOf="parent" />
 
     <pion.tech.pionbase.customview.SelectToolView
@@ -30,6 +30,62 @@
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/llPositionX"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:layout_marginBottom="@dimen/_16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/llPositionY">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/font_400"
+            android:text="X"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16sp" />
+
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/seekBarX"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="50" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llPositionY"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:layout_marginBottom="@dimen/_16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/llBlur">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/font_400"
+            android:text="Y"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16sp" />
+
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/seekBarY"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="50" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/llBlur"

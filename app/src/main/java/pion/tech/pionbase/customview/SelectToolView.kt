@@ -39,6 +39,8 @@ class SelectToolView @JvmOverloads constructor(
     private var currentSizeSticker = 0
     private var originStickerSize = 0
     private var matrixSticker = Matrix()
+    private var stickerPositionX = 0f
+    private var stickerPositionY = 0f
 
     //bitmapBg
     private var bitmapBg: Bitmap? = null
@@ -89,6 +91,24 @@ class SelectToolView @JvmOverloads constructor(
         postInvalidate()
     }
 
+    fun setStickerPosition(isX: Boolean, value: Int) {
+        //value: 0->100
+        //0->50 tru di
+        //50-> 100 cong them
+        //can quy doi ve 100->originSize
+
+        val resultSize = (value.toFloat()/100f - 0.5f)*currentSizeSticker*3
+
+        Log.d("CHECKPOSITION", "resultSize: $resultSize")
+
+        if(isX) {
+            stickerPositionX = resultSize
+        } else {
+            stickerPositionY = resultSize
+        }
+        postInvalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
@@ -115,7 +135,7 @@ class SelectToolView @JvmOverloads constructor(
 
         val scale = currentSizeSticker.toFloat()/bitmapSticker!!.width.toFloat()
 
-        matrixSticker.setTranslate(bounds.left, bounds.top)
+        matrixSticker.setTranslate(bounds.left + stickerPositionX, bounds.top + stickerPositionY)
         matrixSticker.postScale(scale, scale, bounds.left, bounds.top)
 
         canvas.drawBitmap(bitmapSticker!!, matrixSticker, null)

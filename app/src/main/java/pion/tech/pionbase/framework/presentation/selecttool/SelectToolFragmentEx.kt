@@ -52,6 +52,42 @@ fun SelectToolFragment.setSizeStickerEvent() {
     })
 }
 
+fun SelectToolFragment.setStickerPositionEvent() {
+    binding.seekBarX.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) {
+                binding.selectToolView.setStickerPosition(isX = true, value = progress)
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+    })
+
+    binding.seekBarY.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) {
+                binding.selectToolView.setStickerPosition(isX = false, value = progress)
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+    })
+}
+
 fun SelectToolFragment.bitmapBackground(
     resource: Int,
     width: Int,

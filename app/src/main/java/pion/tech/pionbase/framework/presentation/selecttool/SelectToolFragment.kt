@@ -30,6 +30,7 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
             binding.selectToolView.setBitmapBg(bitmapBg)
         }
         setSizeStickerEvent()
+        setStickerPositionEvent()
     }
 
     override fun subscribeObserver(view: View) {
