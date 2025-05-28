@@ -3,11 +3,14 @@ package pion.tech.pionbase.customview
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.DashPathEffect
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PathMeasure
 import android.graphics.PointF
 import android.graphics.PorterDuff
 import android.graphics.RectF
@@ -15,7 +18,9 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.graphics.scale
 import pion.tech.pionbase.util.DeviceDimensionsHelper.convertDpToPixel
+import kotlin.math.max
 
 class SelectToolView @JvmOverloads constructor(
     context: Context,
@@ -28,6 +33,12 @@ class SelectToolView @JvmOverloads constructor(
     private var mCanvas = Canvas()
 
     private var isPreviewInFirstQuadrant = true
+
+    //sticker
+    private var bitmapSticker: Bitmap? = null
+    private var currentSizeSticker = 0
+    private var originStickerSize = 0
+    private var matrixSticker = Matrix()
 
     //bitmapBg
     private var bitmapBg: Bitmap? = null
@@ -42,8 +53,7 @@ class SelectToolView @JvmOverloads constructor(
     }
 
     private val pathPoints = mutableListOf<PointF>()
-
-    private var isSelectPathDone = false
+    private var isDrawPathDone = false
 
     @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -66,10 +76,24 @@ class SelectToolView @JvmOverloads constructor(
         postInvalidate()
     }
 
+    fun setBitmapSticker(bitmapSticker: Bitmap) {
+        this.bitmapSticker = bitmapSticker
+        postInvalidate()
+    }
+
+    fun setSizeSticker(zoomPercent: Int) {
+        //0 -> size ban dau
+        //100 -> size gap doi
+        val stickerSize = originStickerSize + originStickerSize*zoomPercent/100
+        currentSizeSticker = stickerSize
+        postInvalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         drawBg(mCanvas)
+        drawSticker(mCanvas)
         drawSelectPath(mCanvas)
         drawBound(mCanvas)
 
@@ -81,6 +105,20 @@ class SelectToolView @JvmOverloads constructor(
 
             }
         }
+    }
+
+    private fun drawSticker(canvas: Canvas) {
+        bitmapSticker ?: return
+
+        val bounds = RectF()
+        selectPath.computeBounds(bounds, true)
+
+        val scale = currentSizeSticker.toFloat()/bitmapSticker!!.width.toFloat()
+
+        matrixSticker.setTranslate(bounds.left, bounds.top)
+        matrixSticker.postScale(scale, scale, bounds.left, bounds.top)
+
+        canvas.drawBitmap(bitmapSticker!!, matrixSticker, null)
     }
 
     private fun drawBg(canvas: Canvas) {
@@ -99,7 +137,7 @@ class SelectToolView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (isSelectPathDone) return true
+        if (isDrawPathDone) return true
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -139,7 +177,7 @@ class SelectToolView @JvmOverloads constructor(
                     // Close the path
                     selectPath.close()
                     isTouch = false
-                    isSelectPathDone = true
+                    isDrawPathDone = true
                     checkSizePath()
                     postInvalidate()
                     return true
@@ -157,6 +195,7 @@ class SelectToolView @JvmOverloads constructor(
             MotionEvent.ACTION_UP -> {
                 isTouch = false
                 selectPath.close()
+                isDrawPathDone = true
                 checkSizePath()
                 postInvalidate()
             }
@@ -192,6 +231,11 @@ class SelectToolView @JvmOverloads constructor(
 
         if (boundWidth < 100 || boundHeight < 100) {
             listener?.onSelectTooSmall()
+            selectPath.reset()
+            isDrawPathDone = false
+        } else {
+            currentSizeSticker = max(bounds.width(), bounds.height()).toInt()
+            originStickerSize = max(bounds.width(), bounds.height()).toInt()
         }
     }
 

@@ -10,9 +10,8 @@
         android:layout_height="0dp"
         android:layout_margin="@dimen/_16dp"
         android:scaleType="centerCrop"
-        android:visibility="invisible"
         android:src="@drawable/girl"
-        app:layout_constraintBottom_toTopOf="@+id/btnAddTattoo"
+        app:layout_constraintBottom_toTopOf="@+id/llBlur"
         app:layout_constraintTop_toTopOf="parent" />
 
     <pion.tech.pionbase.customview.SelectToolView
@@ -31,6 +30,58 @@
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/llBlur"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:layout_marginBottom="@dimen/_16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/llSize">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/font_400"
+            android:text="Blur"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16sp" />
+
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/seekBarBlur"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/btnAddTattoo">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/font_400"
+            android:text="Size"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16sp" />
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/seekBarSize"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnAddTattoo"

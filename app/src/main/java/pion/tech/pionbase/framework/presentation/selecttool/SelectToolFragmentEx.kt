@@ -5,15 +5,22 @@ import android.graphics.Bitmap.createBitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.addCallback
 import androidx.core.graphics.scale
 import androidx.navigation.fragment.findNavController
+import pion.tech.pionbase.R
 import pion.tech.pionbase.util.setPreventDoubleClickScaleView
 
 fun SelectToolFragment.addTattooEvent() {
     binding.btnAddTattoo.setPreventDoubleClickScaleView {
-
+        binding.selectToolView.setBitmapSticker(createTattooBitmap())
     }
+}
+
+fun SelectToolFragment.createTattooBitmap(): Bitmap {
+    return BitmapFactory.decodeResource(requireContext().resources, R.drawable.anime9)
 }
 
 fun SelectToolFragment.backEvent() {
@@ -24,6 +31,25 @@ fun SelectToolFragment.backEvent() {
 
 fun SelectToolFragment.onBackPressed() {
     findNavController().navigateUp()
+}
+
+fun SelectToolFragment.setSizeStickerEvent() {
+    binding.seekBarSize.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) {
+                binding.selectToolView.setSizeSticker(progress)
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+    })
 }
 
 fun SelectToolFragment.bitmapBackground(
