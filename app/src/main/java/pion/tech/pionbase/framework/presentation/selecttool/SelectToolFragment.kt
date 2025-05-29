@@ -67,4 +67,8 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
     override fun onSelectTooSmall() {
 //        displayToast("Too Small")
     }
+
+    override fun onAddSticker() {
+        binding.selectToolView.setBitmapSticker(createTattooBitmap())
+    }
 }

@@ -10,21 +10,21 @@ import android.graphics.DashPathEffect
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PathMeasure
 import android.graphics.PointF
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
+import android.graphics.Region
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.graphics.scale
-import pion.tech.pionbase.util.DeviceDimensionsHelper.convertDpToPixel
-import kotlin.math.max
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import pion.tech.pionbase.R
+import pion.tech.pionbase.util.DeviceDimensionsHelper.convertDpToPixel
+import pion.tech.pionbase.util.convertDpToPx
+import kotlin.math.max
 import kotlin.math.min
 
 class SelectToolView @JvmOverloads constructor(
@@ -82,11 +82,34 @@ class SelectToolView @JvmOverloads constructor(
     private val pathPoints = mutableListOf<PointF>()
     private var isDrawPathDone = false
 
+    //control button
+    private var canDrawControlButton = false
+    private var bitmapDelete: Bitmap? = null
+    private var bitmapRotate: Bitmap? = null
+    private var bitmapScale: Bitmap? = null
+    private var sizeButtonControl = context.convertDpToPx(24)
+
     @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         mCanvas = Canvas(mBitmap!!)
+
+        initControlButton()
+    }
+
+    private fun initControlButton() {
+        bitmapDelete = context.getDrawable(R.drawable.ic_delete)?.toBitmap(
+            width = sizeButtonControl, height = sizeButtonControl, config = Bitmap.Config.ARGB_8888
+        )
+
+        bitmapScale = context.getDrawable(R.drawable.ic_scale)?.toBitmap(
+            width = sizeButtonControl, height = sizeButtonControl, config = Bitmap.Config.ARGB_8888
+        )
+
+        bitmapRotate = context.getDrawable(R.drawable.ic_rotate)?.toBitmap(
+            width = sizeButtonControl, height = sizeButtonControl, config = Bitmap.Config.ARGB_8888
+        )
     }
 
     init {
@@ -154,6 +177,7 @@ class SelectToolView @JvmOverloads constructor(
         drawSelectPath(mCanvas)
         drawSelectPathFill(mCanvas)
         drawBound(mCanvas)
+        drawButtonControl(mCanvas)
 
         mBitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
 
@@ -219,68 +243,114 @@ class SelectToolView @JvmOverloads constructor(
         canvas.drawRect(bounds, boundPaint)
     }
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (isDrawPathDone) return true
+    private fun drawButtonControl(canvas: Canvas) {
+        if (canDrawControlButton) {
+            val bounds = RectF()
+            selectPath.computeBounds(bounds, true)
 
+            bitmapDelete?.let {
+                canvas.drawBitmap(
+                    it,
+                    bounds.left - sizeButtonControl,
+                    bounds.bottom,
+                    null
+                )
+            }
+            bitmapScale?.let {
+                canvas.drawBitmap(
+                    it,
+                    bounds.right,
+                    bounds.bottom,
+                    null
+                )
+            }
+            bitmapRotate?.let {
+                canvas.drawBitmap(
+                    it,
+                    bounds.right,
+                    bounds.top - sizeButtonControl,
+                    null
+                )
+            }
+        }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                isTouch = true
+                //xu ly su kien khi chua ve xong select path
+                if (!isDrawPathDone) {
+                    isTouch = true
 
-                pathPoints.clear()
-                val point = PointF(event.x, event.y)
-                pathPoints.add(point)
+                    pathPoints.clear()
+                    val point = PointF(event.x, event.y)
+                    pathPoints.add(point)
 
-                selectPath.reset()
-                selectPath.moveTo(event.x, event.y)
-                currentPoint.set(event.x, event.y)
-                checkFirstQuadrant()
+                    selectPath.reset()
+                    selectPath.moveTo(event.x, event.y)
+                    currentPoint.set(event.x, event.y)
+                    checkFirstQuadrant()
+                }
+
+                //xu ly su kien khi bam vao vung select path
+                if (isPointInsidePath(event.x, event.y)) {
+                    if (bitmapSticker == null) {
+                        listener?.onAddSticker()
+                    }
+                }
             }
 
             MotionEvent.ACTION_MOVE -> {
-                isTouch = true
+                //xu ly su kien khi chua ve xong select path
+                if (!isDrawPathDone) {
+                    isTouch = true
 
-                // Check if current point intersects with any previous point
-                val currentX = event.x
-                val currentY = event.y
-                val intersectionResult = findIntersectionPoint(currentX, currentY)
+                    // Check if current point intersects with any previous point
+                    val currentX = event.x
+                    val currentY = event.y
+                    val intersectionResult = findIntersectionPoint(currentX, currentY)
 
-                if (intersectionResult != null && pathPoints.size > 2) {
-                    // Found intersection, create a new closed path from the intersection
-                    val (intersectionPoint, intersectionIndex) = intersectionResult
+                    if (intersectionResult != null && pathPoints.size > 2) {
+                        // Found intersection, create a new closed path from the intersection
+                        val (intersectionPoint, intersectionIndex) = intersectionResult
 
-                    // Create a new path with only the points that form the closed shape
-                    selectPath.reset()
-                    selectPath.moveTo(intersectionPoint.x, intersectionPoint.y)
+                        // Create a new path with only the points that form the closed shape
+                        selectPath.reset()
+                        selectPath.moveTo(intersectionPoint.x, intersectionPoint.y)
 
-                    // Add points from the intersection index to the end of the current path
-                    for (i in intersectionIndex until pathPoints.size) {
-                        selectPath.lineTo(pathPoints[i].x, pathPoints[i].y)
+                        // Add points from the intersection index to the end of the current path
+                        for (i in intersectionIndex until pathPoints.size) {
+                            selectPath.lineTo(pathPoints[i].x, pathPoints[i].y)
+                        }
+
+                        // Close the path
+                        selectPath.close()
+                        isTouch = false
+                        isDrawPathDone = true
+                        checkSizePath()
+                        postInvalidate()
+                        return true
                     }
 
-                    // Close the path
-                    selectPath.close()
-                    isTouch = false
-                    isDrawPathDone = true
-                    checkSizePath()
+                    // No intersection, continue drawing
+                    val point = PointF(currentX, currentY)
+                    pathPoints.add(point)
+                    selectPath.lineTo(currentX, currentY)
+                    currentPoint.set(currentX, currentY)
+                    checkFirstQuadrant()
                     postInvalidate()
-                    return true
                 }
-
-                // No intersection, continue drawing
-                val point = PointF(currentX, currentY)
-                pathPoints.add(point)
-                selectPath.lineTo(currentX, currentY)
-                currentPoint.set(currentX, currentY)
-                checkFirstQuadrant()
-                postInvalidate()
             }
 
             MotionEvent.ACTION_UP -> {
-                isTouch = false
-                selectPath.close()
-                isDrawPathDone = true
-                checkSizePath()
-                postInvalidate()
+                //xu ly su kien khi chua ve xong select path
+                if (!isDrawPathDone) {
+                    isTouch = false
+                    selectPath.close()
+                    isDrawPathDone = true
+                    checkSizePath()
+                    postInvalidate()
+                }
             }
         }
         return true
@@ -323,6 +393,8 @@ class SelectToolView @JvmOverloads constructor(
             selectPath.reset()
             isDrawPathDone = false
         } else {
+            //khi nay moi co bound path oke
+
             currentSizeSticker = max(bounds.width(), bounds.height()).toInt()
             originStickerSize = max(bounds.width(), bounds.height()).toInt()
 
@@ -333,6 +405,9 @@ class SelectToolView @JvmOverloads constructor(
                 height = bitmapAddSize.toInt(),
                 config = Bitmap.Config.ARGB_8888
             )
+
+            //control button
+            canDrawControlButton = true
         }
     }
 
@@ -373,6 +448,25 @@ class SelectToolView @JvmOverloads constructor(
         )
     }
 
+    private fun isPointInsidePath(x: Float, y: Float): Boolean {
+        // Bước 1: Tính bounding box của path
+        val bounds = RectF()
+        selectPath.computeBounds(bounds, true)
+
+        // Bước 2: Tạo Region tương ứng với path
+        val region = Region()
+        val clip = Region(
+            bounds.left.toInt(),
+            bounds.top.toInt(),
+            bounds.right.toInt(),
+            bounds.bottom.toInt()
+        )
+        region.setPath(selectPath, clip)
+
+        // Bước 3: Kiểm tra xem điểm (x, y) có nằm trong region không
+        return region.contains(x.toInt(), y.toInt())
+    }
+
     private var listener: Listener? = null
 
     fun setListener(listener: Listener) {
@@ -383,5 +477,6 @@ class SelectToolView @JvmOverloads constructor(
         fun onDrawSelect(bitmap: Bitmap)
         fun onPreviewChange(isFirstQuadrant: Boolean)
         fun onSelectTooSmall()
+        fun onAddSticker()
     }
 }
