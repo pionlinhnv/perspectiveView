@@ -9,6 +9,7 @@ import pion.tech.pionbase.customview.SelectToolView
 import pion.tech.pionbase.databinding.FragmentSelectToolBinding
 import pion.tech.pionbase.framework.presentation.common.BaseFragment
 import pion.tech.pionbase.util.displayToast
+import pion.tech.pionbase.util.gone
 
 @AndroidEntryPoint
 class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolViewModel>(
@@ -70,5 +71,9 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
 
     override fun onAddSticker() {
         binding.selectToolView.setBitmapSticker(createTattooBitmap())
+    }
+
+    override fun onPreviewDone() {
+        binding.ivPreview.gone()
     }
 }

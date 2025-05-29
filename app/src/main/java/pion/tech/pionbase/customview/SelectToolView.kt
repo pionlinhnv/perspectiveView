@@ -394,6 +394,7 @@ class SelectToolView @JvmOverloads constructor(
             isDrawPathDone = false
         } else {
             //khi nay moi co bound path oke
+            listener?.onPreviewDone()
 
             currentSizeSticker = max(bounds.width(), bounds.height()).toInt()
             originStickerSize = max(bounds.width(), bounds.height()).toInt()
@@ -478,5 +479,6 @@ class SelectToolView @JvmOverloads constructor(
         fun onPreviewChange(isFirstQuadrant: Boolean)
         fun onSelectTooSmall()
         fun onAddSticker()
+        fun onPreviewDone()
     }
 }
