@@ -31,6 +31,7 @@ class SelectToolFragment : BaseFragment<FragmentSelectToolBinding, SelectToolVie
         }
         setSizeStickerEvent()
         setStickerPositionEvent()
+        setStickerBlurEvent()
     }
 
     override fun subscribeObserver(view: View) {

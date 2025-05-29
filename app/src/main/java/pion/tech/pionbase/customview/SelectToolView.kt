@@ -23,6 +23,9 @@ import androidx.core.graphics.scale
 import pion.tech.pionbase.util.DeviceDimensionsHelper.convertDpToPixel
 import kotlin.math.max
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmap
+import pion.tech.pionbase.R
+import kotlin.math.min
 
 class SelectToolView @JvmOverloads constructor(
     context: Context,
@@ -71,8 +74,10 @@ class SelectToolView @JvmOverloads constructor(
         color = Color.parseColor("#4DFFFFFF")
         style = Paint.Style.FILL
     }
-
     private var canDrawFillPath = false
+
+    //bitmap add
+    private var bitmapAdd: Bitmap? = null
 
     private val pathPoints = mutableListOf<PointF>()
     private var isDrawPathDone = false
@@ -86,7 +91,7 @@ class SelectToolView @JvmOverloads constructor(
 
     init {
         selectPaint.apply {
-            color = Color.BLACK
+            color = Color.WHITE
             style = Paint.Style.STROKE
             strokeWidth = context.convertDpToPixel(2f)
             pathEffect = DashPathEffect(floatArrayOf(20f, 10f), 0f)
@@ -109,7 +114,7 @@ class SelectToolView @JvmOverloads constructor(
     fun setSizeSticker(zoomPercent: Int) {
         //0 -> size ban dau
         //100 -> size gap doi
-        val stickerSize = originStickerSize + originStickerSize*zoomPercent/100
+        val stickerSize = originStickerSize + originStickerSize * zoomPercent / 100
         currentSizeSticker = stickerSize
         postInvalidate()
     }
@@ -120,14 +125,23 @@ class SelectToolView @JvmOverloads constructor(
         //50-> 100 cong them
         //can quy doi ve 100->originSize
 
-        val resultSize = (value.toFloat()/100f - 0.5f)*currentSizeSticker*3
+        val resultSize = (value.toFloat() / 100f - 0.5f) * currentSizeSticker * 3
 
         Log.d("CHECKPOSITION", "resultSize: $resultSize")
 
-        if(isX) {
+        if (isX) {
             stickerPositionX = resultSize
         } else {
             stickerPositionY = resultSize
+        }
+        postInvalidate()
+    }
+
+    fun setCutBlur(value: Int) {
+        if (value > 0f) {
+            subPaintPath.maskFilter = BlurMaskFilter(value.toFloat(), BlurMaskFilter.Blur.NORMAL)
+        } else {
+            subPaintPath.maskFilter = null
         }
         postInvalidate()
     }
@@ -162,7 +176,7 @@ class SelectToolView @JvmOverloads constructor(
         val bounds = RectF()
         selectPath.computeBounds(bounds, true)
 
-        val scale = currentSizeSticker.toFloat()/bitmapSticker!!.width.toFloat()
+        val scale = currentSizeSticker.toFloat() / bitmapSticker!!.width.toFloat()
 
         matrixSticker.setTranslate(bounds.left + stickerPositionX, bounds.top + stickerPositionY)
         matrixSticker.postScale(scale, scale, bounds.left, bounds.top)
@@ -181,8 +195,20 @@ class SelectToolView @JvmOverloads constructor(
     }
 
     private fun drawSelectPathFill(canvas: Canvas) {
-        if(!canDrawFillPath) {
+        if (!canDrawFillPath) {
             canvas.drawPath(selectPath, fillPaint)
+
+            val bounds = RectF()
+            selectPath.computeBounds(bounds, true)
+
+            bitmapAdd?.let {
+                canvas.drawBitmap(
+                    it,
+                    bounds.centerX() - it.width / 2,
+                    bounds.centerY() - it.width / 2,
+                    null
+                )
+            }
         }
     }
 
@@ -260,7 +286,11 @@ class SelectToolView @JvmOverloads constructor(
         return true
     }
 
-    private fun findIntersectionPoint(x: Float, y: Float, threshold: Float = 20f): Pair<PointF, Int>? {
+    private fun findIntersectionPoint(
+        x: Float,
+        y: Float,
+        threshold: Float = 20f
+    ): Pair<PointF, Int>? {
         // Bỏ qua kiểm tra nếu chưa đủ điểm
         if (pathPoints.size <= 50) return null
 
@@ -268,8 +298,10 @@ class SelectToolView @JvmOverloads constructor(
         // Tăng số lượng điểm bỏ qua ở cuối lên 10 thay vì 3
         for (i in 0 until pathPoints.size - 50) {
             val point = pathPoints[i]
-            val distance = Math.sqrt(Math.pow((x - point.x).toDouble(), 2.0) +
-                    Math.pow((y - point.y).toDouble(), 2.0))
+            val distance = Math.sqrt(
+                Math.pow((x - point.x).toDouble(), 2.0) +
+                        Math.pow((y - point.y).toDouble(), 2.0)
+            )
 
             // Giảm ngưỡng xuống để yêu cầu điểm gần hơn
             if (distance < 15f) {
@@ -293,6 +325,14 @@ class SelectToolView @JvmOverloads constructor(
         } else {
             currentSizeSticker = max(bounds.width(), bounds.height()).toInt()
             originStickerSize = max(bounds.width(), bounds.height()).toInt()
+
+            //bitmap add size = 1/5 min stickerSize
+            val bitmapAddSize = min(bounds.width(), bounds.height()) / 5
+            bitmapAdd = context.getDrawable(R.drawable.ic_add_orange)?.toBitmap(
+                width = bitmapAddSize.toInt(),
+                height = bitmapAddSize.toInt(),
+                config = Bitmap.Config.ARGB_8888
+            )
         }
     }
 

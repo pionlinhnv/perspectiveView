@@ -88,6 +88,25 @@ fun SelectToolFragment.setStickerPositionEvent() {
     })
 }
 
+fun SelectToolFragment.setStickerBlurEvent() {
+    binding.seekBarBlur.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) {
+                binding.selectToolView.setCutBlur(progress)
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+        }
+
+    })
+}
+
 fun SelectToolFragment.bitmapBackground(
     resource: Int,
     width: Int,
